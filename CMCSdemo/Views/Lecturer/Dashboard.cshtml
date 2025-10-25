@@ -1,0 +1,116 @@
+﻿@model CMCSdemo.Models.PaginatedResult<CMCSdemo.Models.Claim>
+@{
+    ViewData["Title"] = "Lecturer Dashboard";
+    var filter = ViewBag.Filter as CMCSdemo.Models.ClaimSearchFilter;
+}
+
+<div class="dashboard-container">
+    <div class="dashboard-header">
+        <h1>Lecturer Dashboard</h1>
+        <a asp-action="SubmitClaim" class="btn btn-primary">Submit New Claim</a>
+    </div>
+
+    <div class="stats-cards">
+        <div class="stat-card">
+            <div class="stat-number">@Model.TotalCount</div>
+            <div class="stat-label">Total Claims</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">@Model.Items.Count(c => c.Status == CMCSdemo.Models.ClaimStatus.Pending || c.Status == CMCSdemo.Models.ClaimStatus.SubmittedToCoordinator)</div>
+            <div class="stat-label">Pending</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">@Model.Items.Count(c => c.Status == CMCSdemo.Models.ClaimStatus.ApprovedByManager)</div>
+            <div class="stat-label">Approved</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">R @Model.Items.Where(c => c.Status == CMCSdemo.Models.ClaimStatus.ApprovedByManager).Sum(c => c.TotalAmount).ToString("N2")</div>
+            <div class="stat-label">Total Approved</div>
+        </div>
+    </div>
+
+    <div class="filter-section">
+        <form method="get" asp-action="Dashboard" class="filter-form">
+            <div class="form-group-inline">
+                <input type="text" name="SearchTerm" value="@filter?.SearchTerm" placeholder="Search claims..." class="form-control" />
+            </div>
+            <div class="form-group-inline">
+                <select name="StatusFilter" class="form-control">
+                    <option value="">All Statuses</option>
+                    @foreach (var status in Enum.GetValues<CMCSdemo.Models.ClaimStatus>())
+                    {
+                        <option value="@status" selected="@(filter?.StatusFilter == status)">@status</option>
+                    }
+                </select>
+            </div>
+            <div class="form-group-inline">
+                <input type="date" name="StartDate" value="@filter?.StartDate?.ToString("yyyy-MM-dd")" class="form-control" placeholder="Start Date" />
+            </div>
+            <div class="form-group-inline">
+                <input type="date" name="EndDate" value="@filter?.EndDate?.ToString("yyyy-MM-dd")" class="form-control" placeholder="End Date" />
+            </div>
+            <button type="submit" class="btn btn-primary">Filter</button>
+            <a asp-action="Dashboard" class="btn btn-secondary">Clear</a>
+        </form>
+    </div>
+
+    <div class="claims-table-container">
+        <h2>My Claims</h2>
+        @if (Model.Items.Any())
+        {
+            <table class="claims-table">
+                <thead>
+                    <tr>
+                        <th><a asp-action="Dashboard" asp-route-SortBy="ClaimId" asp-route-SortOrder="@(filter?.SortBy == "ClaimId" && filter?.SortOrder == "asc" ? "desc" : "asc")">Claim ID</a></th>
+                        <th><a asp-action="Dashboard" asp-route-SortBy="SubmittedDate" asp-route-SortOrder="@(filter?.SortBy == "SubmittedDate" && filter?.SortOrder == "asc" ? "desc" : "asc")">Submitted Date</a></th>
+                        <th>Hours</th>
+                        <th>Rate</th>
+                        <th><a asp-action="Dashboard" asp-route-SortBy="TotalAmount" asp-route-SortOrder="@(filter?.SortBy == "TotalAmount" && filter?.SortOrder == "asc" ? "desc" : "asc")">Total Amount</a></th>
+                        <th><a asp-action="Dashboard" asp-route-SortBy="Status" asp-route-SortOrder="@(filter?.SortBy == "Status" && filter?.SortOrder == "asc" ? "desc" : "asc")">Status</a></th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var claim in Model.Items)
+                    {
+                        <tr>
+                            <td>#@claim.ClaimId</td>
+                            <td>@claim.SubmittedDate.ToString("dd MMM yyyy")</td>
+                            <td>@claim.HoursWorked hrs</td>
+                            <td>R @claim.HourlyRate</td>
+                            <td>R @claim.TotalAmount.ToString("N2")</td>
+                            <td><span class="status-badge status-@claim.Status.ToString().ToLower()">@claim.Status.ToString().Replace("SubmittedTo", "With ").Replace("By", " ")</span></td>
+                            <td>
+                                <a asp-action="ViewStatus" asp-route-id="@claim.ClaimId" class="btn btn-small">View</a>
+                                @if (claim.Status == CMCSdemo.Models.ClaimStatus.Pending || claim.Status == CMCSdemo.Models.ClaimStatus.RejectedByCoordinator || claim.Status == CMCSdemo.Models.ClaimStatus.RejectedByManager)
+                                {
+                                    <a asp-action="EditClaim" asp-route-id="@claim.ClaimId" class="btn btn-small btn-secondary">Edit</a>
+                                }
+                                <a asp-action="PrintClaim" asp-route-id="@claim.ClaimId" class="btn btn-small btn-secondary" target="_blank">Print</a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+            <div class="pagination">
+                @if (Model.HasPreviousPage)
+                {
+                    <a asp-action="Dashboard" asp-route-PageNumber="@(Model.PageNumber - 1)" asp-route-SearchTerm="@filter?.SearchTerm" asp-route-StatusFilter="@filter?.StatusFilter" class="btn btn-small">Previous</a>
+                }
+                <span class="pagination-info">Page @Model.PageNumber of @Model.TotalPages (@Model.TotalCount total claims)</span>
+                @if (Model.HasNextPage)
+                {
+                    <a asp-action="Dashboard" asp-route-PageNumber="@(Model.PageNumber + 1)" asp-route-SearchTerm="@filter?.SearchTerm" asp-route-StatusFilter="@filter?.StatusFilter" class="btn btn-small">Next</a>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="empty-state">
+                <p>No claims found.</p>
+                <a asp-action="SubmitClaim" class="btn btn-primary">Submit Your First Claim</a>
+            </div>
+        }
+    </div>
+</div>

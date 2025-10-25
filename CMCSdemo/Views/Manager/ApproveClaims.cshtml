@@ -1,0 +1,96 @@
+﻿@model CMCSdemo.Models.PaginatedResult<CMCSdemo.Models.Claim>
+@{
+    ViewData["Title"] = "Approve Claims";
+}
+
+<div class="verify-container">
+    <div class="verify-header">
+        <h1>Approve Claims</h1>
+        <p>Final review and approval for payment processing</p>
+    </div>
+
+    @if (Model.Items.Any())
+    {
+        @foreach (var claim in Model.Items)
+        {
+            <div class="claim-card">
+                <div class="claim-card-header">
+                    <h3>Claim #@claim.ClaimId - @claim.LecturerName</h3>
+                    <span class="claim-date">Verified: @claim.VerifiedDate?.ToString("dd MMM yyyy")</span>
+                </div>
+
+                <div class="claim-card-body">
+                    <div class="claim-info-grid">
+                        <div class="info-item">
+                            <span class="info-label">Hours Worked:</span>
+                            <span class="info-value">@claim.HoursWorked hrs</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Hourly Rate:</span>
+                            <span class="info-value">R @claim.HourlyRate</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Total Amount:</span>
+                            <span class="info-value total-highlight">R @claim.TotalAmount.ToString("N2")</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Email:</span>
+                            <span class="info-value">@claim.LecturerEmail</span>
+                        </div>
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(claim.CoordinatorComments))
+                    {
+                        <div class="notes-section">
+                            <strong>Coordinator Comments:</strong>
+                            <p>@claim.CoordinatorComments</p>
+                        </div>
+                    }
+
+                    @if (!string.IsNullOrEmpty(claim.AdditionalNotes))
+                    {
+                        <div class="notes-section">
+                            <strong>Lecturer Notes:</strong>
+                            <p>@claim.AdditionalNotes</p>
+                        </div>
+                    }
+
+                    @if (claim.Documents != null && claim.Documents.Any())
+                    {
+                        <div class="documents-section">
+                            <strong>Supporting Documents:</strong>
+                            <ul class="document-list">
+                                @foreach (var doc in claim.Documents)
+                                {
+                                    <li>📄 @doc.FileName (@(doc.FileSize / 1024) KB)</li>
+                                }
+                            </ul>
+                        </div>
+                    }
+
+                    <form asp-action="ApproveClaim" method="post" class="verify-form">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="claimId" value="@claim.ClaimId" />
+
+                        <div class="form-group">
+                            <label>Manager Comments:</label>
+                            <textarea name="comments" class="form-control" rows="3" placeholder="Add your approval comments..."></textarea>
+                        </div>
+
+                        <div class="action-buttons">
+                            <button type="submit" name="action" value="approve" class="btn btn-success">✔ Approve for Payment</button>
+                            <button type="submit" name="action" value="reject" class="btn btn-danger">✖ Reject</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        }
+    }
+    else
+    {
+        <div class="empty-state">
+            <p>No claims pending approval.</p>
+            <a asp-action="Dashboard" class="btn btn-primary">Back to Dashboard</a>
+        </div>
+    }
+</div>

@@ -1,0 +1,66 @@
+﻿@model List<CMCSdemo.Models.ActivityLog>
+@{
+    ViewData["Title"] = "Activity Log";
+}
+
+<div class="dashboard-container">
+    <div class="dashboard-header">
+        <h1>System Activity Log</h1>
+        <a asp-action="Index" class="btn btn-secondary">Back to Reports</a>
+    </div>
+
+    <div class="activity-log-container">
+        @if (Model.Any())
+        {
+            @foreach (var log in Model.Take(100))
+            {
+                <div class="activity-log-item">
+                    <div class="activity-icon">
+                        @if (log.Action.Contains("Submit"))
+                        {
+                            <span class="icon-submit">📤</span>
+                        }
+                        else if (log.Action.Contains("Approve") || log.Action.Contains("Verified"))
+                        {
+                            <span class="icon-approve">✓</span>
+                        }
+                        else if (log.Action.Contains("Reject"))
+                        {
+                            <span class="icon-reject">✗</span>
+                        }
+                        else if (log.Action.Contains("Comment"))
+                        {
+                            <span class="icon-comment">💬</span>
+                        }
+                        else if (log.Action.Contains("Document"))
+                        {
+                            <span class="icon-document">📎</span>
+                        }
+                        else
+                        {
+                            <span class="icon-default">📋</span>
+                        }
+                    </div>
+                    <div class="activity-content">
+                        <div class="activity-header">
+                            <strong>@log.UserName</strong>
+                            <span class="activity-role">(@log.UserRole)</span>
+                            <span class="activity-action">@log.Action</span>
+                        </div>
+                        <div class="activity-details">@log.Details</div>
+                        <div class="activity-meta">
+                            <span>Claim #@log.ClaimId</span>
+                            <span>@log.Timestamp.ToString("dd MMM yyyy HH:mm:ss")</span>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="empty-state">
+                <p>No activity logs found.</p>
+            </div>
+        }
+    </div>
+</div>

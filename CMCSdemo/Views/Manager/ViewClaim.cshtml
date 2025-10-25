@@ -1,0 +1,100 @@
+﻿@model CMCSdemo.Models.Claim
+@{
+    ViewData["Title"] = "View Claim";
+    var comments = ViewBag.Comments as List<CMCSdemo.Models.ClaimComment>;
+    var activityLogs = ViewBag.ActivityLogs as List<CMCSdemo.Models.ActivityLog>;
+}
+
+<div class="status-container">
+    <div class="status-header">
+        <h1>Claim #@Model.ClaimId Details</h1>
+        <span class="status-badge status-@Model.Status.ToString().ToLower()">@Model.Status</span>
+    </div>
+
+    <div class="claim-details-grid">
+        <div class="detail-card">
+            <h3>Claim Information</h3>
+            <div class="detail-row">
+                <span class="detail-label">Lecturer:</span>
+                <span class="detail-value">@Model.LecturerName</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Email:</span>
+                <span class="detail-value">@Model.LecturerEmail</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Hours Worked:</span>
+                <span class="detail-value">@Model.HoursWorked hrs</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Hourly Rate:</span>
+                <span class="detail-value">R @Model.HourlyRate</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Total Amount:</span>
+                <span class="detail-value total-amount">R @Model.TotalAmount.ToString("N2")</span>
+            </div>
+        </div>
+
+        @if (!string.IsNullOrEmpty(Model.CoordinatorComments))
+        {
+            <div class="detail-card">
+                <h3>Coordinator Verification</h3>
+                <p>@Model.CoordinatorComments</p>
+                <p><small>Verified: @Model.VerifiedDate?.ToString("dd MMM yyyy")</small></p>
+            </div>
+        }
+    </div>
+
+    <div class="detail-card">
+        <h3>Comments & Discussion</h3>
+        @if (comments != null && comments.Any())
+        {
+            <div class="comments-list">
+                @foreach (var comment in comments)
+                {
+                    <div class="comment-item">
+                        <div class="comment-header">
+                            <strong>@comment.UserName</strong>
+                            <span class="comment-role">(@comment.UserRole)</span>
+                            <span class="comment-date">@comment.CreatedDate.ToString("dd MMM yyyy HH:mm")</span>
+                        </div>
+                        <div class="comment-text">@comment.CommentText</div>
+                    </div>
+                }
+            </div>
+        }
+
+        <form asp-action="AddComment" method="post" class="comment-form">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="claimId" value="@Model.ClaimId" />
+            <textarea name="commentText" class="form-control" rows="3" placeholder="Add a comment..." required></textarea>
+            <button type="submit" class="btn btn-primary">Add Comment</button>
+        </form>
+    </div>
+
+    @if (Model.Status == CMCSdemo.Models.ClaimStatus.SubmittedToManager)
+    {
+        <div class="detail-card">
+            <h3>Approval Action</h3>
+            <form asp-action="ApproveClaim" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="claimId" value="@Model.ClaimId" />
+
+                <div class="form-group">
+                    <label>Manager Comments:</label>
+                    <textarea name="comments" class="form-control" rows="3" required></textarea>
+                </div>
+
+                <div class="action-buttons">
+                    <button type="submit" name="action" value="approve" class="btn btn-success">Approve for Payment</button>
+                    <button type="submit" name="action" value="reject" class="btn btn-danger">Reject Claim</button>
+                </div>
+            </form>
+        </div>
+    }
+
+    <div class="form-actions">
+        <a asp-action="Dashboard" class="btn btn-secondary">Back to Dashboard</a>
+    </div>
+</div>

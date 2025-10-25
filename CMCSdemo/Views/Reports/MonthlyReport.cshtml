@@ -1,0 +1,94 @@
+﻿@model List<CMCSdemo.Models.Claim>
+@{
+    ViewData["Title"] = "Monthly Report";
+}
+
+<div class="dashboard-container">
+    <div class="dashboard-header">
+        <h1>Monthly Report - @ViewBag.MonthName</h1>
+        <a asp-action="Index" class="btn btn-secondary">Back to Reports</a>
+    </div>
+
+    <div class="filter-section">
+        <form method="get" asp-action="MonthlyReport" class="filter-form">
+            <div class="form-group-inline">
+                <label>Month:</label>
+                <select name="month" class="form-control">
+                    @for (int i = 1; i <= 12; i++)
+                    {
+                        <option value="@i" selected="@(i == ViewBag.SelectedMonth)">new DateTime(2024, i, 1).ToString("MMMM")</option>
+                    }
+                </select>
+            </div>
+            <div class="form-group-inline">
+                <label>Year:</label>
+                <select name="year" class="form-control">
+                    @for (int i = DateTime.Now.Year; i >= DateTime.Now.Year - 5; i--)
+                    {
+                        <option value="@i" selected="@(i == ViewBag.SelectedYear)">@i</option>
+                    }
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary">Generate Report</button>
+        </form>
+    </div>
+
+    <div class="stats-cards">
+        <div class="stat-card">
+            <div class="stat-number">@Model.Count</div>
+            <div class="stat-label">Total Claims</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">@Model.Count(c => c.Status == CMCSdemo.Models.ClaimStatus.ApprovedByManager)</div>
+            <div class="stat-label">Approved</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">R @Model.Sum(c => c.TotalAmount).ToString("N2")</div>
+            <div class="stat-label">Total Amount</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">R @Model.Where(c => c.Status == CMCSdemo.Models.ClaimStatus.ApprovedByManager).Sum(c => c.TotalAmount).ToString("N2")</div>
+            <div class="stat-label">Approved Amount</div>
+        </div>
+    </div>
+
+    <div class="claims-table-container">
+        <h2>Claims Details</h2>
+        @if (Model.Any())
+        {
+            <table class="claims-table">
+                <thead>
+                    <tr>
+                        <th>Claim ID</th>
+                        <th>Lecturer</th>
+                        <th>Date</th>
+                        <th>Hours</th>
+                        <th>Rate</th>
+                        <th>Amount</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var claim in Model.OrderBy(c => c.SubmittedDate))
+                    {
+                        <tr>
+                            <td>#@claim.ClaimId</td>
+                            <td>@claim.LecturerName</td>
+                            <td>@claim.SubmittedDate.ToString("dd MMM yyyy")</td>
+                            <td>@claim.HoursWorked hrs</td>
+                            <td>R @claim.HourlyRate</td>
+                            <td>R @claim.TotalAmount.ToString("N2")</td>
+                            <td><span class="status-badge status-@claim.Status.ToString().ToLower()">@claim.Status</span></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+        else
+        {
+            <div class="empty-state">
+                <p>No claims found for this period.</p>
+            </div>
+        }
+    </div>
+</div>

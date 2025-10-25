@@ -1,0 +1,169 @@
+﻿@model CMCSdemo.Models.ClaimStatistics
+@{
+    ViewData["Title"] = "Reports & Analytics";
+}
+
+<div class="dashboard-container">
+    <div class="dashboard-header">
+        <h1>Reports & Analytics Dashboard</h1>
+        <div class="header-actions">
+            <a asp-action="MonthlyReport" class="btn btn-primary">Monthly Report</a>
+            <a asp-action="LecturerPerformance" class="btn btn-primary">Lecturer Performance</a>
+            <a asp-action="ExportToCSV" class="btn btn-secondary">Export All Data</a>
+        </div>
+    </div>
+
+    <div class="stats-cards">
+        <div class="stat-card stat-card-primary">
+            <div class="stat-icon">📊</div>
+            <div class="stat-number">@Model.TotalClaims</div>
+            <div class="stat-label">Total Claims</div>
+        </div>
+        <div class="stat-card stat-card-warning">
+            <div class="stat-icon">⏳</div>
+            <div class="stat-number">@Model.PendingClaims</div>
+            <div class="stat-label">Pending Claims</div>
+        </div>
+        <div class="stat-card stat-card-success">
+            <div class="stat-icon">✓</div>
+            <div class="stat-number">@Model.ApprovedClaims</div>
+            <div class="stat-label">Approved Claims</div>
+        </div>
+        <div class="stat-card stat-card-danger">
+            <div class="stat-icon">✗</div>
+            <div class="stat-number">@Model.RejectedClaims</div>
+            <div class="stat-label">Rejected Claims</div>
+        </div>
+    </div>
+
+    <div class="stats-cards">
+        <div class="stat-card stat-card-info">
+            <div class="stat-icon">💰</div>
+            <div class="stat-number">R @Model.TotalAmountClaimed.ToString("N2")</div>
+            <div class="stat-label">Total Amount Claimed</div>
+        </div>
+        <div class="stat-card stat-card-success">
+            <div class="stat-icon">✓</div>
+            <div class="stat-number">R @Model.TotalAmountApproved.ToString("N2")</div>
+            <div class="stat-label">Total Approved</div>
+        </div>
+        <div class="stat-card stat-card-danger">
+            <div class="stat-icon">✗</div>
+            <div class="stat-number">R @Model.TotalAmountRejected.ToString("N2")</div>
+            <div class="stat-label">Total Rejected</div>
+        </div>
+        <div class="stat-card stat-card-info">
+            <div class="stat-icon">📈</div>
+            <div class="stat-number">R @Model.AverageClaimAmount.ToString("N2")</div>
+            <div class="stat-label">Average Claim</div>
+        </div>
+    </div>
+
+    <div class="charts-container">
+        <div class="chart-card">
+            <h3>Claims by Month</h3>
+            <canvas id="claimsByMonthChart"></canvas>
+        </div>
+
+        <div class="chart-card">
+            <h3>Amount by Month</h3>
+            <canvas id="amountByMonthChart"></canvas>
+        </div>
+    </div>
+
+    <div class="claims-table-container">
+        <h2>Top Performing Lecturers</h2>
+        <table class="claims-table">
+            <thead>
+                <tr>
+                    <th>Lecturer Name</th>
+                    <th>Total Claims</th>
+                    <th>Approved Claims</th>
+                    <th>Total Amount</th>
+                    <th>Approval Rate</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var lecturer in Model.TopLecturers)
+                {
+                    <tr>
+                        <td>@lecturer.LecturerName</td>
+                        <td>@lecturer.TotalClaims</td>
+                        <td>@lecturer.ApprovedClaims</td>
+                        <td>R @lecturer.TotalAmount.ToString("N2")</td>
+                        <td>
+                            <div class="progress-bar-container">
+                                <div class="progress-bar" style="width: @lecturer.ApprovalRate%"></div>
+                                <span class="progress-text">@lecturer.ApprovalRate.ToString("N1")%</span>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Claims by Month Chart
+        const claimsByMonthCtx = document.getElementById('claimsByMonthChart').getContext('2d');
+        const claimsByMonthData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.ClaimsByMonth));
+
+        new Chart(claimsByMonthCtx, {
+            type: 'bar',
+            data: {
+                labels: Object.keys(claimsByMonthData),
+                datasets: [{
+                    label: 'Number of Claims',
+                    data: Object.values(claimsByMonthData),
+                    backgroundColor: '#3498db',
+                    borderColor: '#2980b9',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1
+                        }
+                    }
+                }
+            }
+        });
+
+        // Amount by Month Chart
+        const amountByMonthCtx = document.getElementById('amountByMonthChart').getContext('2d');
+        const amountByMonthData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.AmountByMonth));
+
+        new Chart(amountByMonthCtx, {
+            type: 'line',
+            data: {
+                labels: Object.keys(amountByMonthData),
+                datasets: [{
+                    label: 'Total Amount (R)',
+                    data: Object.values(amountByMonthData),
+                    backgroundColor: 'rgba(39, 174, 96, 0.2)',
+                    borderColor: '#27ae60',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    </script>
+}

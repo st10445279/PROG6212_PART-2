@@ -1,0 +1,88 @@
+﻿@model CMCSdemo.Models.PaginatedResult<CMCSdemo.Models.Claim>
+@{
+    ViewData["Title"] = "Verify Claims";
+}
+
+<div class="verify-container">
+    <div class="verify-header">
+        <h1>Verify Claims</h1>
+        <p>Review and verify submitted claims before forwarding to Academic Manager</p>
+    </div>
+
+    @if (Model.Items.Any())
+    {
+        @foreach (var claim in Model.Items)
+        {
+            <div class="claim-card">
+                <div class="claim-card-header">
+                    <h3>Claim #@claim.ClaimId - @claim.LecturerName</h3>
+                    <span class="claim-date">Submitted: @claim.SubmittedDate.ToString("dd MMM yyyy")</span>
+                </div>
+
+                <div class="claim-card-body">
+                    <div class="claim-info-grid">
+                        <div class="info-item">
+                            <span class="info-label">Hours Worked:</span>
+                            <span class="info-value">@claim.HoursWorked hrs</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Hourly Rate:</span>
+                            <span class="info-value">R @claim.HourlyRate</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Total Amount:</span>
+                            <span class="info-value total-highlight">R @claim.TotalAmount.ToString("N2")</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Email:</span>
+                            <span class="info-value">@claim.LecturerEmail</span>
+                        </div>
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(claim.AdditionalNotes))
+                    {
+                        <div class="notes-section">
+                            <strong>Additional Notes:</strong>
+                            <p>@claim.AdditionalNotes</p>
+                        </div>
+                    }
+
+                    @if (claim.Documents != null && claim.Documents.Any())
+                    {
+                        <div class="documents-section">
+                            <strong>Supporting Documents:</strong>
+                            <ul class="document-list">
+                                @foreach (var doc in claim.Documents)
+                                {
+                                    <li>📄 @doc.FileName (@(doc.FileSize / 1024) KB)</li>
+                                }
+                            </ul>
+                        </div>
+                    }
+
+                    <form asp-action="VerifyClaim" method="post" class="verify-form">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="claimId" value="@claim.ClaimId" />
+
+                        <div class="form-group">
+                            <label>Comments:</label>
+                            <textarea name="comments" class="form-control" rows="3" placeholder="Add your verification comments..."></textarea>
+                        </div>
+
+                        <div class="action-buttons">
+                            <button type="submit" name="action" value="approve" class="btn btn-success">✔ Verify & Forward</button>
+                            <button type="submit" name="action" value="reject" class="btn btn-danger">✖ Reject</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        }
+    }
+    else
+    {
+        <div class="empty-state">
+            <p>No claims pending verification.</p>
+            <a asp-action="Dashboard" class="btn btn-primary">Back to Dashboard</a>
+        </div>
+    }
+</div>

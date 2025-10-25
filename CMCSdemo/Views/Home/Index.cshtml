@@ -1,0 +1,57 @@
+﻿@{
+    ViewData["Title"] = "Home";
+}
+
+<div class="hero-section">
+    <div class="container">
+        <h1 class="hero-title">Contract Monthly Claim System</h1>
+        <p class="hero-subtitle">Streamline your claim submission and approval process</p>
+
+        <div class="role-cards">
+            <div class="role-card">
+                <div class="role-icon">📝</div>
+                <h3>Lecturer</h3>
+                <p>Submit and track your monthly claims</p>
+                <a asp-controller="Lecturer" asp-action="Dashboard" class="btn btn-primary">Go to Dashboard</a>
+            </div>
+
+            <div class="role-card">
+                <div class="role-icon">✅</div>
+                <h3>Programme Coordinator</h3>
+                <p>Verify and process submitted claims</p>
+                <a asp-controller="Coordinator" asp-action="Dashboard" class="btn btn-primary">Go to Dashboard</a>
+            </div>
+
+            <div class="role-card">
+                <div class="role-icon">🏆</div>
+                <h3>Academic Manager</h3>
+                <p>Approve claims for final payment</p>
+                <a asp-controller="Manager" asp-action="Dashboard" class="btn btn-primary">Go to Dashboard</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="features-section">
+    <div class="container">
+        <h2>Key Features</h2>
+        <div class="features-grid">
+            <div class="feature-item">
+                <h4>📤 Easy Submission</h4>
+                <p>Submit claims with just a few clicks</p>
+            </div>
+            <div class="feature-item">
+                <h4>📎 Document Upload</h4>
+                <p>Attach supporting documents securely</p>
+            </div>
+            <div class="feature-item">
+                <h4>📊 Real-time Tracking</h4>
+                <p>Monitor claim status transparently</p>
+            </div>
+            <div class="feature-item">
+                <h4>✔️ Quick Approval</h4>
+                <p>Streamlined verification workflow</p>
+            </div>
+        </div>
+    </div>
+</div>

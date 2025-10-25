@@ -1,0 +1,137 @@
+﻿@model CMCSdemo.Models.PaginatedResult<CMCSdemo.Models.Claim>
+@{
+    ViewData["Title"] = "Manager Dashboard";
+    var filter = ViewBag.Filter as CMCSdemo.Models.ClaimSearchFilter;
+}
+
+<div class="dashboard-container">
+    <div class="dashboard-header">
+        <h1>Academic Manager Dashboard</h1>
+        <div class="header-actions">
+            <a asp-action="ApproveClaims" class="btn btn-primary">Approve Claims</a>
+            <a asp-controller="Reports" asp-action="Index" class="btn btn-secondary">View Reports</a>
+        </div>
+    </div>
+
+    <div class="stats-cards">
+        <div class="stat-card">
+            <div class="stat-number">@Model.TotalCount</div>
+            <div class="stat-label">Pending Approval</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">R @Model.Items.Sum(c => c.TotalAmount).ToString("N2")</div>
+            <div class="stat-label">Total Value</div>
+        </div>
+    </div>
+
+    <div class="filter-section">
+        <form method="get" asp-action="Dashboard" class="filter-form">
+            <div class="form-group-inline">
+                <input type="text" name="SearchTerm" value="@filter?.SearchTerm" placeholder="Search claims..." class="form-control" />
+            </div>
+            <div class="form-group-inline">
+                <input type="date" name="StartDate" value="@filter?.StartDate?.ToString("yyyy-MM-dd")" class="form-control" />
+            </div>
+            <div class="form-group-inline">
+                <input type="date" name="EndDate" value="@filter?.EndDate?.ToString("yyyy-MM-dd")" class="form-control" />
+            </div>
+            <button type="submit" class="btn btn-primary">Filter</button>
+            <a asp-action="Dashboard" class="btn btn-secondary">Clear</a>
+        </form>
+    </div>
+
+    <div class="claims-table-container">
+        <h2>Claims Awaiting Final Approval</h2>
+        @if (Model.Items.Any())
+        {
+            <table class="claims-table">
+                <thead>
+                    <tr>
+                        <th><input type="checkbox" id="selectAll" /></th>
+                        <th>Claim ID</th>
+                        <th>Lecturer</th>
+                        <th>Verified Date</th>
+                        <th>Hours</th>
+                        <th>Total Amount</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var claim in Model.Items)
+                    {
+                        <tr>
+                            <td><input type="checkbox" class="claim-checkbox" value="@claim.ClaimId" /></td>
+                            <td>#@claim.ClaimId</td>
+                            <td>@claim.LecturerName</td>
+                            <td>@claim.VerifiedDate?.ToString("dd MMM yyyy")</td>
+                            <td>@claim.HoursWorked hrs</td>
+                            <td>R @claim.TotalAmount.ToString("N2")</td>
+                            <td>
+                                <a asp-action="ViewClaim" asp-route-id="@claim.ClaimId" class="btn btn-small">View</a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+            <div class="bulk-actions">
+                <button type="button" class="btn btn-success" onclick="bulkAction('approve')">Bulk Approve</button>
+                <button type="button" class="btn btn-danger" onclick="bulkAction('reject')">Bulk Reject</button>
+            </div>
+
+            <div class="pagination">
+                @if (Model.HasPreviousPage)
+                {
+                    <a asp-action="Dashboard" asp-route-PageNumber="@(Model.PageNumber - 1)" class="btn btn-small">Previous</a>
+                }
+                <span class="pagination-info">Page @Model.PageNumber of @Model.TotalPages</span>
+                @if (Model.HasNextPage)
+                {
+                    <a asp-action="Dashboard" asp-route-PageNumber="@(Model.PageNumber + 1)" class="btn btn-small">Next</a>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="empty-state">
+                <p>No claims pending approval.</p>
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.getElementById('selectAll').addEventListener('change', function() {
+            const checkboxes = document.querySelectorAll('.claim-checkbox');
+            checkboxes.forEach(cb => cb.checked = this.checked);
+        });
+
+        function bulkAction(action) {
+            const checkboxes = document.querySelectorAll('.claim-checkbox:checked');
+            if (checkboxes.length === 0) {
+                alert('Please select at least one claim.');
+                return;
+            }
+
+            const claimIds = Array.from(checkboxes).map(cb => cb.value).join(',');
+            const comments = prompt(`Enter comments for bulk ${action}:`);
+
+            if (comments !== null) {
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '@Url.Action("BulkApprove")';
+
+                form.innerHTML = `
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="claimIds" value="${claimIds}" />
+                    <input type="hidden" name="action" value="${action}" />
+                    <input type="hidden" name="comments" value="${comments}" />
+                `;
+
+                document.body.appendChild(form);
+                form.submit();
+            }
+        }
+    </script>
+}

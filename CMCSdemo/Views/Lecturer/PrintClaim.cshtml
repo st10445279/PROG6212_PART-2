@@ -1,0 +1,182 @@
+﻿@model CMCSdemo.Models.Claim
+@{
+    ViewData["Title"] = "Print Claim";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Claim #@Model.ClaimId - Print</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+            color: #333;
+        }
+
+        .header {
+            text-align: center;
+            border-bottom: 3px solid #2c3e50;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+
+            .header h1 {
+                margin: 0;
+                color: #2c3e50;
+            }
+
+        .section {
+            margin-bottom: 30px;
+        }
+
+            .section h2 {
+                background-color: #ecf0f1;
+                padding: 10px;
+                margin-bottom: 15px;
+            }
+
+        .info-row {
+            display: flex;
+            padding: 8px 0;
+            border-bottom: 1px solid #ecf0f1;
+        }
+
+        .info-label {
+            font-weight: bold;
+            width: 200px;
+        }
+
+        .info-value {
+            flex: 1;
+        }
+
+        .total-amount {
+            font-size: 24px;
+            font-weight: bold;
+            color: #27ae60;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+
+        .footer {
+            margin-top: 50px;
+            text-align: center;
+            font-size: 12px;
+            color: #7f8c8d;
+        }
+
+        @@media print {
+            .no-print {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Contract Monthly Claim System</h1>
+        <p>Claim Receipt</p>
+    </div>
+
+    <div class="section">
+        <h2>Claim Information</h2>
+        <div class="info-row">
+            <div class="info-label">Claim ID:</div>
+            <div class="info-value">#@Model.ClaimId</div>
+        </div>
+        <div class="info-row">
+            <div class="info-label">Status:</div>
+            <div class="info-value"><span class="status-badge">@Model.Status</span></div>
+        </div>
+        <div class="info-row">
+            <div class="info-label">Submitted Date:</div>
+            <div class="info-value">@Model.SubmittedDate.ToString("dd MMMM yyyy")</div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>Lecturer Details</h2>
+        <div class="info-row">
+            <div class="info-label">Name:</div>
+            <div class="info-value">@Model.LecturerName</div>
+        </div>
+        <div class="info-row">
+            <div class="info-label">Email:</div>
+            <div class="info-value">@Model.LecturerEmail</div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>Claim Details</h2>
+        <div class="info-row">
+            <div class="info-label">Hours Worked:</div>
+            <div class="info-value">@Model.HoursWorked hours</div>
+        </div>
+        <div class="info-row">
+            <div class="info-label">Hourly Rate:</div>
+            <div class="info-value">R @Model.HourlyRate.ToString("N2")</div>
+        </div>
+        <div class="info-row">
+            <div class="info-label">Total Amount:</div>
+            <div class="info-value total-amount">R @Model.TotalAmount.ToString("N2")</div>
+        </div>
+        @if (!string.IsNullOrEmpty(Model.AdditionalNotes))
+        {
+            <div class="info-row">
+                <div class="info-label">Additional Notes:</div>
+                <div class="info-value">@Model.AdditionalNotes</div>
+            </div>
+        }
+    </div>
+
+    @if (Model.Documents.Any())
+    {
+        <div class="section">
+            <h2>Supporting Documents</h2>
+            @foreach (var doc in Model.Documents)
+            {
+                <div class="info-row">
+                    <div class="info-label">Document:</div>
+                    <div class="info-value">@doc.FileName (@(doc.FileSize / 1024) KB)</div>
+                </div>
+            }
+        </div>
+    }
+
+    @if (!string.IsNullOrEmpty(Model.CoordinatorComments))
+    {
+        <div class="section">
+            <h2>Coordinator Comments</h2>
+            <p>@Model.CoordinatorComments</p>
+            <p><small>Verified: @Model.VerifiedDate?.ToString("dd MMMM yyyy")</small></p>
+        </div>
+    }
+
+    @if (!string.IsNullOrEmpty(Model.ManagerComments))
+    {
+        <div class="section">
+            <h2>Manager Comments</h2>
+            <p>@Model.ManagerComments</p>
+            <p><small>Approved: @Model.ApprovedDate?.ToString("dd MMMM yyyy")</small></p>
+        </div>
+    }
+
+    <div class="footer">
+        <p>This is an official document from the Contract Monthly Claim System</p>
+        <p>Generated on @DateTime.Now.ToString("dd MMMM yyyy HH:mm")</p>
+    </div>
+
+    <div class="no-print" style="text-align: center; margin-top: 30px;">
+        <button onclick="window.print()" class="btn btn-primary">Print This Page</button>
+        <button onclick="window.close()" class="btn btn-secondary">Close</button>
+    </div>
+</body>
+</html>

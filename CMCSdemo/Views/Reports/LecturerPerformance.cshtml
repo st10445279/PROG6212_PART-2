@@ -1,0 +1,85 @@
+﻿@model List<CMCSdemo.Models.LecturerPerformance>
+@{
+    ViewData["Title"] = "Lecturer Performance";
+}
+
+<div class="dashboard-container">
+    <div class="dashboard-header">
+        <h1>Lecturer Performance Report</h1>
+        <a asp-action="Index" class="btn btn-secondary">Back to Reports</a>
+    </div>
+
+    <div class="claims-table-container">
+        <h2>Lecturer Rankings</h2>
+        <table class="claims-table">
+            <thead>
+                <tr>
+                    <th>Rank</th>
+                    <th>Lecturer Name</th>
+                    <th>Total Claims</th>
+                    <th>Approved Claims</th>
+                    <th>Total Amount</th>
+                    <th>Approval Rate</th>
+                    <th>Performance</th>
+                </tr>
+            </thead>
+            <tbody>
+                @{
+                    int rank = 1;
+                }
+                @foreach (var lecturer in Model)
+                {
+                    <tr>
+                        <td>
+                            @if (rank == 1)
+                            {
+                                <span class="rank-badge rank-gold">1st</span>
+                            }
+                            else if (rank == 2)
+                            {
+                                <span class="rank-badge rank-silver">2nd</span>
+                            }
+                            else if (rank == 3)
+                            {
+                                <span class="rank-badge rank-bronze">3rd</span>
+                            }
+                            else
+                            {
+                                <span class="rank-badge">@rank</span>
+                            }
+                        </td>
+                        <td><strong>@lecturer.LecturerName</strong></td>
+                        <td>@lecturer.TotalClaims</td>
+                        <td>@lecturer.ApprovedClaims</td>
+                        <td>R @lecturer.TotalAmount.ToString("N2")</td>
+                        <td>
+                            <div class="progress-bar-container">
+                                <div class="progress-bar" style="width: @lecturer.ApprovalRate%"></div>
+                                <span class="progress-text">@lecturer.ApprovalRate.ToString("N1")%</span>
+                            </div>
+                        </td>
+                        <td>
+                            @if (lecturer.ApprovalRate >= 80)
+                            {
+                                <span class="performance-badge performance-excellent">Excellent</span>
+                            }
+                            else if (lecturer.ApprovalRate >= 60)
+                            {
+                                <span class="performance-badge performance-good">Good</span>
+                            }
+                            else if (lecturer.ApprovalRate >= 40)
+                            {
+                                <span class="performance-badge performance-average">Average</span>
+                            }
+                            else
+                            {
+                                <span class="performance-badge performance-poor">Needs Improvement</span>
+                            }
+                        </td>
+                    </tr>
+                    rank++;
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

@@ -1,0 +1,80 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Contract Monthly Claim System</title>
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body>
+    <header>
+        <nav class="navbar">
+            <div class="container">
+                <a class="navbar-brand" href="/">
+                    <span class="logo-text">CMCS</span>
+                </a>
+                <ul class="nav-menu">
+                    <li><a asp-controller="Home" asp-action="Index">Home</a></li>
+                    <li class="nav-dropdown">
+                        <a href="#">Lecturer</a>
+                        <ul class="dropdown-menu">
+                            <li><a asp-controller="Lecturer" asp-action="Dashboard">Dashboard</a></li>
+                            <li><a asp-controller="Lecturer" asp-action="SubmitClaim">Submit Claim</a></li>
+                            <li><a asp-controller="Lecturer" asp-action="Profile">My Profile</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-dropdown">
+                        <a href="#">Coordinator</a>
+                        <ul class="dropdown-menu">
+                            <li><a asp-controller="Coordinator" asp-action="Dashboard">Dashboard</a></li>
+                            <li><a asp-controller="Coordinator" asp-action="VerifyClaims">Verify Claims</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-dropdown">
+                        <a href="#">Manager</a>
+                        <ul class="dropdown-menu">
+                            <li><a asp-controller="Manager" asp-action="Dashboard">Dashboard</a></li>
+                            <li><a asp-controller="Manager" asp-action="ApproveClaims">Approve Claims</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-dropdown">
+                        <a href="#">Reports</a>
+                        <ul class="dropdown-menu">
+                            <li><a asp-controller="Reports" asp-action="Index">Analytics Dashboard</a></li>
+                            <li><a asp-controller="Reports" asp-action="MonthlyReport">Monthly Report</a></li>
+                            <li><a asp-controller="Reports" asp-action="LecturerPerformance">Lecturer Performance</a></li>
+                            <li><a asp-controller="Reports" asp-action="ActivityLog">Activity Log</a></li>
+                            <li><a asp-controller="Reports" asp-action="ExportToCSV">Export Data</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+    </header>
+
+    <main role="main">
+        @if (TempData["Success"] != null)
+        {
+            <div class="alert alert-success">
+                @TempData["Success"]
+            </div>
+        }
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert alert-error">
+                @TempData["Error"]
+            </div>
+        }
+        @RenderBody()
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 - Contract Monthly Claim System - All Rights Reserved</p>
+        </div>
+    </footer>
+
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
